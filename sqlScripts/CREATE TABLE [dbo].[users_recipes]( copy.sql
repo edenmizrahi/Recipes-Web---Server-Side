@@ -1,5 +1,10 @@
-CREATE TABLE [dbo].[users](
-	[user_id] [UNIQUEIDENTIFIER] PRIMARY KEY NOT NULL default NEWID(),
-	[recipe_id] [varchar](30) PRIMARY KEY NOT NULL ,
+CREATE TABLE [dbo].[users_recipes](
+	[username] [varchar](30)  FOREIGN KEY REFERENCES users(username),
+	[recipe_id] [varchar](30) NOT NULL ,
+    [watched_in] [int] ,
+    [favorite_in] [int] ,
+    PRIMARY KEY (username,recipe_id),
+    
+
 )
 
