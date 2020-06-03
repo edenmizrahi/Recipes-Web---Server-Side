@@ -27,7 +27,7 @@ router.get("/recipeInfo/:ids",(req,res)=>{
   (profile_utils.getRecipeProfileInfo(req.user,recipes_ids_list)).then((theResult)=>{
     res.send(theResult);
   }).catch((err)=>{
-      throw { status: err.status, message: eww.message };
+      throw { status: err.status, message: err.message };
   })
   
   });
