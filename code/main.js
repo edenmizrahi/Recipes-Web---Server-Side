@@ -3,8 +3,8 @@ require("dotenv").config();
 var express = require("express");
 var path = require("path");
 var logger = require("morgan");
-// const session = require("client-sessions");
-// const DButils = require("./modules/DButils");
+const session = require("client-sessions");
+const DButils = require("./modules/DButils");
 
 var app = express();
 app.use(logger("dev")); //logger
@@ -23,8 +23,8 @@ app.use(express.static(path.join(__dirname, "public"))); //To serve static files
 
 var port = process.env.PORT || "4000";
 //#endregion
-// const users_authentication = require("./routes/users_authentication");
-// const profile = require("./routes/profile");
+const users_authentication = require("./routes/users_authentication");
+const profile = require("./routes/profile");
 const recipe = require("./routes/recipes");
 //#region cookie middleware
 
@@ -32,9 +32,9 @@ const recipe = require("./routes/recipes");
 
 app.get("/", (req, res) => res.send("welcome"));
 
-// app.use("/profile", profile);
+app.use("/profile", profile);
 app.use("/recipes", recipe);
-// app.use(users_authentication);
+app.use(users_authentication);
 
 //not found
 app.use((req,res)=>{
@@ -44,7 +44,7 @@ app.use((req,res)=>{
 
 app.use(function (err, req, res, next) {
   // console.error(err);
-  res.status(err.status || 500).send({ message: err.message, success: false });
+  res.status(err.status || 500).send({ message: err.message||"bad", success: false });
 });
 
 const server = app.listen(port, () => {
