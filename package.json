@@ -1,10 +1,9 @@
 {
-  "name": "Recipes",
+  "name": "recipes",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon codes/main.js",
+    "start": "nodemon code/main.js",
     "debug": "node --nolazy --inspect-brk=9229 code/main.js"
   },
   "dependencies": {
@@ -19,5 +18,14 @@
   "devDependencies": {},
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edenmizrahi/Recipes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/edenmizrahi/Recipes/issues"
+  },
+  "homepage": "https://github.com/edenmizrahi/Recipes#readme",
+  "description": ""
 }
