@@ -22,30 +22,14 @@ async function getRecipeProfileInfo(username, recipes_ids_list) {
 
 
 function relevantData(recipes_Info) {
+    let dic={};
     return recipes_Info.map((recipe_Info) => {
         console.log(recipe_Info);
-        var inside = {
-            "watched": recipe_Info.watched_in,
-            "favorite": recipe_Info.favorite_in,
-        }
-        recipeID = recipe_Info.recipe_id;
-
-        var dic = {
-            [recipeID]: inside
-        }
+        var recipeID = recipe_Info.recipe_id;
+        dic[recipeID]=new Object();
+        dic[recipeID].watched= recipe_Info.watched_in==0?false:true;
+        dic[recipeID].favorite= recipe_Info.favorite_in==0?false:true;
         return dic;
-
-        // const{
-        //     recipe_id,
-        //     watched_in,
-        //     favorite_in,
-        // }=recipe_Info;
-
-        // return{
-        //     id: recipe_id,
-        //     watched: watched_in,
-        //     favorite: favorite_in,
-        // };
     });
 }
 async function getProfileInfoRcipes(id, username) {
@@ -136,7 +120,7 @@ async function getTopThree(username) {
     ORDER BY [id] DESC;`);
     console.log(result);
 
-    return result.map((res) => {
+    return result.map((rec) => {
         // console.log(res);
         // const{
         //     recipe_id,
@@ -147,13 +131,13 @@ async function getTopThree(username) {
         //     id: recipe_id,
 
         // };
-        return Number(recipe_Info.recipe_id);
+        return Number(rec.recipe_id);
     });
 
 }
 
-async function getMyRecipes(username) {
-    recipes = await DButils.execQuery(`SELECT * FROM personalRecipes WHERE username='${username}'`);
+async function getMyRecipes(username,familyOrMy) {
+    recipes = await DButils.execQuery(`SELECT * FROM personalRecipes WHERE (username='${username}' and type= '${familyOrMy}')`);
     let recipesIds = recipes.map((res) => {
         console.log(res);
         const {
@@ -165,22 +149,17 @@ async function getMyRecipes(username) {
             id: recipe_id,
         };
     });
-    res = await addIngrediants(recipesIds);
+    res = await addIngrediants(recipesIds,familyOrMy);
     console.log(res);
     return res;
 
 }
 
-
-async function addIngrediants(recipesIds) {
-    //  id="123";
-    // instructions=await DButils.execQuery(`SELECT * FROM instructions WHERE recipe_id='${id}'`);
-    // generalINFO=await DButils.execQuery(`SELECT * FROM personalRecipes WHERE recipe_id='${id}'`);
-    // ingredients=await DButils.execQuery(`SELECT * FROM ingredients WHERE recipe_id='${id}'`);
+async function addIngrediants(recipesIds,familyOrMy) {
     console.log(recipesIds);
     promises = [];
     recipesIds.map((id_i) => {
-        promises.push(getPersonalRecipesDetails(id_i.id));
+        promises.push(getPersonalRecipesDetails(id_i.id,familyOrMy));
     }
     );
     res = await Promise.all(promises);
@@ -189,35 +168,80 @@ async function addIngrediants(recipesIds) {
 
     // return  await Promise.all (recipesIds.map( async (id_i)=> await getPersonalRecipesDetails(id_i)));
 }
-asyn
-async function getPersonalRecipesDetails(rid) {
+
+async function getPersonalRecipesDetails(rid,familyOrMy) {
     // id=id_i.id;
     // console.log(id);
 
     let instructions = await DButils.execQuery(`SELECT * FROM instructions WHERE recipe_id='${rid}'`);
     let generalINFO = await DButils.execQuery(`SELECT * FROM personalRecipes WHERE recipe_id='${rid}'`);
     let ingredients = await DButils.execQuery(`SELECT * FROM ingredients WHERE recipe_id='${rid}'`);
-
+    let dic={};
     console.log("id is: " + rid);
     console.log(ingredients);
     let ingredientsOfRec = await ingredients.map((ing) => {
-        console.log(ing);
-        let ingredientsOfRec = {
-            [ing.ingredient]: ing.amount
-        }
-        return ingredientsOfRec;
+        // dic[ing.ingredient]=new Object();
+        // dic[ing.ingredient].amount= ing.amount
+
+        // console.log(ing);
+        // let ingredientsOfRec = {
+        //     [ing.ingredient]: ing.amount
+        // }
+        // return ingredientsOfRec;
+
+        // return dic
+        return {[ing.ingredient]: ing.amount};
     });
     console.log(ingredientsOfRec);
 
     let instructionsOfRec = instructions.map((ins) => {
-        let instructionsOfRec = {
-            [ins.num]: ins.content
-        }
-        return instructionsOfRec;
+        // let instructionsOfRec = {
+        //     [ins.num]: ins.content
+        // }
+        // return {instructionsOfRec};
+        return {[ins.num]: ins.content};
     });
     console.log(instructionsOfRec);
     console.log(generalINFO.title);
     console.log("id is: " + generalINFO[0].recipe_id);
+    
+    
+    if(familyOrMy=="family"){
+        let familyInfo = await DButils.execQuery(`SELECT * FROM familyRecipes WHERE recipe_id='${rid}'`);
+        let pictures = await DButils.execQuery(`SELECT * FROM picturesRecipes WHERE recipe_id='${rid}'`);
+        let picturesOfRec = pictures.map((pic) => {
+            // const{
+            //     pic.picture,
+
+            // }=pictures;
+
+            // return{
+            //     picture,
+            // };
+            return pic.picture;
+            // let instructionsOfRec = {
+            //     [ins.num]: ins.content
+            // }
+            // return instructionsOfRec;
+        });
+
+        let res = {
+            "title": generalINFO[0].title,
+            "owner": familyInfo[0].owner,
+            "when": familyInfo[0].when,
+            "pictures": picturesOfRec,
+            "image": generalINFO[0].image,
+            "duration": generalINFO[0].duration,
+            "vegetarians": generalINFO[0].Vegetarians,
+            "vegan": generalINFO[0].Vegan,
+            "glutenFree": generalINFO[0].glutenFree,
+            "ingredients": ingredientsOfRec,
+            "instrauctions": instructionsOfRec,
+        }
+        return { [generalINFO[0].recipe_id]: res };
+
+    }
+    else{
     let res = {
         "title": generalINFO[0].title,
         "image": generalINFO[0].image,
@@ -228,8 +252,9 @@ async function getPersonalRecipesDetails(rid) {
         "ingredients": ingredientsOfRec,
         "instrauctions": instructionsOfRec,
     }
-    console.log("res is:" + res + " res id: " + generalINFO[0].recipe_id);
     return { [generalINFO[0].recipe_id]: res };
+    }
+    // console.log("res is:" + res + " res id: " + generalINFO[0].recipe_id);
 }
 exports.getMyRecipes = getMyRecipes;
 exports.getTopThree = getTopThree;
