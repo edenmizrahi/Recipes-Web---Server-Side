@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 
-const search_functions = require("./help_functions/search_recipes");
+const search_functions = require("../modules/search_recipes");
 
 router.use((req, res, next) => {
     console.log("Recipes route");
