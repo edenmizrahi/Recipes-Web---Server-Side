@@ -11,7 +11,7 @@ router.post("/Register", async (req, res, next) => {
       // parameters exists
       ex_message=auth_util.registrationMissingParam(req.body);
       if(ex_message!=""){
-        throw { status: 401, message:ex_message};
+        next({ status: 401, message:ex_message});
       }
       const users = await auth_util.getUsersFronDB();
       await auth_util.addNewUser(req,users)
