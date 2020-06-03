@@ -3,8 +3,8 @@ require("dotenv").config();
 var express = require("express");
 var path = require("path");
 var logger = require("morgan");
-const session = require("client-sessions");
-const DButils = require("./modules/DButils");
+// const session = require("client-sessions");
+// const DButils = require("./modules/DButils");
 
 var app = express();
 app.use(logger("dev")); //logger
@@ -21,20 +21,20 @@ app.use(
 app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(express.static(path.join(__dirname, "public"))); //To serve static files such as images, CSS files, and JavaScript files
 
-var port = process.env.PORT || "3000";
+var port = process.env.PORT || "4000";
 //#endregion
-const users_authentication = require("./routes/users_authentication");
-const profile = require("./routes/profile");
-// const recipe = require("./routes/recipe");
+// const users_authentication = require("./routes/users_authentication");
+// const profile = require("./routes/profile");
+const recipe = require("./routes/recipes");
 //#region cookie middleware
 
 //#endregion
 
 app.get("/", (req, res) => res.send("welcome"));
 
-app.use("/profile", profile);
-// app.use("/recipe", recipe);
-app.use(users_authentication);
+// app.use("/profile", profile);
+app.use("/recipes", recipe);
+// app.use(users_authentication);
 
 //not found
 app.use((req,res)=>{
