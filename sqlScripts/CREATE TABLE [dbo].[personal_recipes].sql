@@ -7,6 +7,7 @@ CREATE TABLE [dbo].[personalRecipes](
     [Vegetarians] [int],
     [Vegan] [int],
     [glutenFree][int],
+    [type] [varchar](30) ,
     PRIMARY KEY (username,recipe_id),
 
 )

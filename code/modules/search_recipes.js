@@ -116,8 +116,8 @@ async function getRecipeInfo(recipe_id, param) {
 }
 
 async function getRecipesPreviewInfo(recipes_id_list) {
+  try{
   let promises = [];
-
   // For each id  -> get promise of GET response
   recipes_id_list.map((id) =>
     promises.push(axios.get(`${recipes_api_url}/${id}/information?${api_key}`))
@@ -126,6 +126,11 @@ async function getRecipesPreviewInfo(recipes_id_list) {
 
   relevantRecipesData = previewViewData(info_response1);
   return relevantRecipesData;
+  }
+  catch(err){
+    throw { status: 404, message: "recipe not found" };
+
+  }
 }
 
 async function getRecipesInfo(recipes_id_list, search_params) {
@@ -282,7 +287,8 @@ function previewViewData(recipes_Info) {
 
 //     return info_response;
 // }
-
+exports.getRecipesPreviewInfo = getRecipesPreviewInfo;
+exports.getRecipesInfo = getRecipesInfo;
 exports.searchForRecipes = searchForRecipes;
 exports.searchForRandomRecipes = searchForRandomRecipes;
 exports.extractQueriesParams = extractQueriesParams;
