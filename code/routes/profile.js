@@ -108,7 +108,7 @@ router.get("/favorite", async (req, res,next) => {
 });
 
 /*
-get recipe from  my recipe 
+* get recipe from  my recipe 
 */
 router.get("/myRecipes", async (req, res, next) => {
   try {
@@ -141,16 +141,15 @@ router.post("/", function (req, res) {
   console.log(result);
   res.send(JSON.stringify(req.user_recupe_details));
 });
-router.get("/favorites", function (req, res) {
 
+router.get("/favorites", function (req, res) {
   res.send(req.originalUrl);
 });
+
 
 router.get("/personalRecipes", function (req, res) {
   res.send(req.originalUrl);
 });
-
-
 
 router.use("/addPersonalRecipe", (req, res, next) => {
   const { cookie } = req.body;
