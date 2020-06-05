@@ -27,10 +27,10 @@ router.use((req, res, next) => {
  * get recipe's profile info(watched/favorite):
  * return dic{"45": object{watched :"0", favorite:"0"}} 
  */
-router.get("/recipeInfo/:ids", (req, res, next) => {
+router.get("/recipeInfo/:ids", async(req, res, next) => {
   try {
     const recipes_ids_list = JSON.parse(req.params.ids);
-    r = search_functions.getRecipesPreviewInfo(recipes_ids_list);
+    r = await search_functions.getRecipesPreviewInfo(recipes_ids_list);
     (profile_utils.getRecipeProfileInfo(req.user, recipes_ids_list)).then((theResult) => {
       res.send(theResult[0]);
     }).catch((err) => {
@@ -45,13 +45,13 @@ router.get("/recipeInfo/:ids", (req, res, next) => {
 
 /**
 * return the latest top 3 watches
-   @return 3 recipes pre-view  @todo: *******change*********
+   @return 3 recipes pre-view  
 */
 router.get("/watchedList/top", async (req, res,next) => {
   try {
     top = await profile_utils.getTopThree(req.user);
-    r = await search_functions.getRecipesPreviewInfo(top);
-    res.send(r[0]);
+    r = await search_functions.getRecipesPreviewInfoForProfile(top);
+    res.send(r);
   }
   catch (err) {
     next(err);
@@ -96,10 +96,10 @@ router.put("/favorite/add/:id", async (req, res, next) => {
  * get my favorite recipes(pre-view)
  * @return @todo -change********
  */
-router.get("/favorite", async (req, res) => {
+router.get("/favorite", async (req, res,next) => {
   try {
     resul = await profile_utils.getMyFavorite(req.user);
-    r = await search_functions.getRecipesPreviewInfo(resul);
+    r = await search_functions.getRecipesPreviewInfoForProfile(resul);
     res.send(r);
   }
   catch (err) {

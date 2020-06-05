@@ -106,7 +106,7 @@ async function addToWatchList(username, id) {
     if (users.find((x) => x.username === username && x.recipe_id == id)) {
         newId = await getNextId();
         console.log(newId);
-        user_recipe_details = await DButils.execQuery(`UPDATE users_recipes SET  id= '${newId}', watched_is='1' WHERE username='${username}' AND recipe_id='${id}'`);
+        user_recipe_details = await DButils.execQuery(`UPDATE users_recipes SET  id= '${newId}', watched_in='1' WHERE username='${username}' AND recipe_id='${id}'`);
     }
     else {
         newId = await getNextId();
@@ -176,9 +176,22 @@ async function getPersonalRecipesDetails(rid,familyOrMy) {
     let instructions = await DButils.execQuery(`SELECT * FROM instructions WHERE recipe_id='${rid}'`);
     let generalINFO = await DButils.execQuery(`SELECT * FROM personalRecipes WHERE recipe_id='${rid}'`);
     let ingredients = await DButils.execQuery(`SELECT * FROM ingredients WHERE recipe_id='${rid}'`);
-    let dic={};
+  
     console.log("id is: " + rid);
     console.log(ingredients);
+
+    // /**** */
+    // let dic={};
+    // return recipes_Info.map((recipe_Info) => {
+    //     console.log(recipe_Info);
+    //     var recipeID = recipe_Info.recipe_id;
+    //     dic[recipeID]=new Object();
+    //     dic[recipeID].watched= recipe_Info.watched_in==0?false:true;
+    //     dic[recipeID].favorite= recipe_Info.favorite_in==0?false:true;
+    //     return dic;
+    // });
+    // /*********** */
+    let dic={};
     let ingredientsOfRec = await ingredients.map((ing) => {
         // dic[ing.ingredient]=new Object();
         // dic[ing.ingredient].amount= ing.amount
@@ -190,16 +203,25 @@ async function getPersonalRecipesDetails(rid,familyOrMy) {
         // return ingredientsOfRec;
 
         // return dic
-        return {[ing.ingredient]: ing.amount};
+        dic=new Object();
+        dic.name=ing.ingredient;
+        dic.amount=ing.amount;
+        dic.unit=ing.unit;
+        return dic;
     });
     console.log(ingredientsOfRec);
-
+    let dicOfIns={};
     let instructionsOfRec = instructions.map((ins) => {
         // let instructionsOfRec = {
         //     [ins.num]: ins.content
         // }
         // return {instructionsOfRec};
-        return {[ins.num]: ins.content};
+
+        dicOfIns=new Object();
+        dicOfIns.number=ins.num;
+        dicOfIns.content=ins.content;
+        return dicOfIns;
+        // return ins.content;
     });
     console.log(instructionsOfRec);
     console.log(generalINFO.title);
@@ -232,9 +254,9 @@ async function getPersonalRecipesDetails(rid,familyOrMy) {
             "pictures": picturesOfRec,
             "image": generalINFO[0].image,
             "duration": generalINFO[0].duration,
-            "vegetarians": generalINFO[0].Vegetarians,
-            "vegan": generalINFO[0].Vegan,
-            "glutenFree": generalINFO[0].glutenFree,
+            "vegetarians": generalINFO[0].Vegetarians==1?true:false,
+            "vegan": generalINFO[0].Vegan==1?true:false,
+            "glutenFree": generalINFO[0].glutenFree==1?true:false,
             "ingredients": ingredientsOfRec,
             "instrauctions": instructionsOfRec,
         }
@@ -242,17 +264,20 @@ async function getPersonalRecipesDetails(rid,familyOrMy) {
 
     }
     else{
-    let res = {
-        "title": generalINFO[0].title,
-        "image": generalINFO[0].image,
-        "duration": generalINFO[0].duration,
-        "vegetarians": generalINFO[0].Vegetarians,
-        "vegan": generalINFO[0].Vegan,
-        "glutenFree": generalINFO[0].glutenFree,
-        "ingredients": ingredientsOfRec,
-        "instrauctions": instructionsOfRec,
-    }
-    return { [generalINFO[0].recipe_id]: res };
+        let res=new Object();
+     
+        res.recipe_id= generalINFO[0].recipe_id;
+        res.title= generalINFO[0].title;
+        res.image= generalINFO[0].image;
+        res.duration= generalINFO[0].duration;
+        res.vegetarians= generalINFO[0].Vegetarians;
+        res.vegan= generalINFO[0].Vegan;
+        res.glutenFree= generalINFO[0].glutenFree;
+        res.ingredients= ingredientsOfRec;
+        res.instrauctions= instructionsOfRec;
+    
+        return res;
+    //  { [generalINFO[0].recipe_id]: res };
     }
     // console.log("res is:" + res + " res id: " + generalINFO[0].recipe_id);
 }

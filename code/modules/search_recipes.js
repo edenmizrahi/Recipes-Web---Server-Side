@@ -2,7 +2,7 @@ const axios = require("axios"); //support promises
 // sponcular settings
 const recipes_api_url = "https://api.spoonacular.com/recipes";
 // A secret --> should be in .env file
-const api_key = "apiKey=7156609fcc2f41bba4daf0495f98a455";
+const api_key = "apiKey=5f47b6a138ec48749d29c3a4da713d17";
 
 
 function extractQueriesParams(query_params, search_params ){
@@ -123,7 +123,7 @@ async function getRecipesPreviewInfo(recipes_id_list) {
     promises.push(axios.get(`${recipes_api_url}/${id}/information?${api_key}`))
   );
   let info_response1 = await Promise.all(promises);
-
+  
   relevantRecipesData = previewViewData(info_response1);
   return relevantRecipesData;
   }
@@ -132,6 +132,26 @@ async function getRecipesPreviewInfo(recipes_id_list) {
 
   }
 }
+
+
+async function getRecipesPreviewInfoForProfile(recipes_id_list) {
+  try{
+  let promises = [];
+  // For each id  -> get promise of GET response
+  recipes_id_list.map((id) =>
+    promises.push(axios.get(`${recipes_api_url}/${id}/information?${api_key}`))
+  );
+  let info_response1 = await Promise.all(promises);
+
+  relevantRecipesData = previewViewDataForProfile(info_response1);
+  return relevantRecipesData;
+  }
+  catch(err){
+    throw { status: 404, message: "recipe not found" };
+
+  }
+}
+
 
 async function getRecipesInfo(recipes_id_list, search_params) {
   let promises = [];
@@ -249,6 +269,48 @@ function previewViewDataForOneRecipe(recipe_Info){
 }
 
 function previewViewData(recipes_Info) {
+  // let dic={};
+  return recipes_Info.map((recipe_info) => {
+    const {
+      id,
+      image,
+      title,
+      readyInMinutes,
+      aggregateLikes,
+      vegetarian,
+      vegan,
+      glutenFree,
+    } = recipe_info.data;
+ 
+    var inside = {
+      image: image,
+      title: title,
+      readyInMinutes: readyInMinutes,
+      aggregateLikes: aggregateLikes,
+      vegetarian: vegetarian,
+      vegan: vegan,
+      glutenFree: glutenFree,
+    }
+ 
+    // dic[id]=new Object();
+
+    // dic[id].image= image;
+    // dic[id].title= title;
+    // dic[id].readyInMinutes=readyInMinutes
+    // dic[id].aggregateLikes= aggregateLikes
+    // dic[id].vegetarian= vegetarian;
+    // dic[id].vegan= vegan;
+    // dic[id].glutenFree= glutenFree;
+    var dic = {
+      [id] : inside
+    }
+    return dic;
+  
+  });
+}
+
+
+function previewViewDataForProfile(recipes_Info) {
   
   return recipes_Info.map((recipe_info) => {
     const {
@@ -263,6 +325,7 @@ function previewViewData(recipes_Info) {
     } = recipe_info.data;
 
     var inside = {
+      recipe_id:id,
       image: image,
       title: title,
       readyInMinutes: readyInMinutes,
@@ -272,10 +335,8 @@ function previewViewData(recipes_Info) {
       glutenFree: glutenFree,
     }
     
-    var dic = {
-      [id] : inside
-    }
-    return dic;
+   
+    return inside;
   
   });
 }
@@ -287,6 +348,8 @@ function previewViewData(recipes_Info) {
 
 //     return info_response;
 // }
+exports.getRecipesPreviewInfoForProfile = getRecipesPreviewInfoForProfile;
+
 exports.getRecipesPreviewInfo = getRecipesPreviewInfo;
 exports.getRecipesInfo = getRecipesInfo;
 exports.searchForRecipes = searchForRecipes;
