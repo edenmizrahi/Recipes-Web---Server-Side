@@ -15,7 +15,7 @@ router.post("/Register", async (req, res, next) => {
       }
       const users = await auth_util.getUsersFronDB();
       await auth_util.addNewUser(req,users)
-      res.status(201).send({ message: "user created", success: true });
+      res.status(201).send({ message: "A new user has been added", success: true });
     } catch (error) {
       next(error);
     }

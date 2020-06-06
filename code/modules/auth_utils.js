@@ -37,7 +37,7 @@ async function getUsersFronDB(){
 
 async function addNewUser(req,users){
     if (users.find((x) => x.username === req.body.username))
-    throw { status: 409, message: "Username taken" };
+    throw { status: 409, message: "Username already taken" };
 
 // encrypt password
   let hash_password = bcrypt.hashSync(
@@ -67,9 +67,7 @@ async function login(users,req){
         throw { status: 401, message: "Username or Password incorrect" };
     }
     return user;
-   
-    // Set cookie
-    
+       
 }
 
 

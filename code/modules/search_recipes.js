@@ -145,6 +145,25 @@ async function getRecipesPreviewInfo(recipes_id_list) {
   }
 }
 
+
+async function getRecipesPreviewInfoForProfile(recipes_id_list) {
+  try{
+  let promises = [];
+  // For each id  -> get promise of GET response
+  recipes_id_list.map((id) =>
+    promises.push(axios.get(`${recipes_api_url}/${id}/information?${api_key}`))
+  );
+  let info_response1 = await Promise.all(promises);
+
+  relevantRecipesData = previewViewDataForProfile(info_response1);
+  return relevantRecipesData;
+  }
+  catch(err){
+    throw { status: 404, message: "recipe not found" };
+
+  }
+}
+
 // async function that return info about the recipes - full/preview according to "randomOrNot"
 async function getRecipesInfo(recipes_id_list, search_params, randomOrNot) {
   try {
@@ -309,7 +328,7 @@ function previewViewData(recipes_Info) {
       vegan,
       glutenFree,
     } = recipe_info.data;
-
+ 
     var inside = {
       image: image,
       title: title,
@@ -328,6 +347,47 @@ function previewViewData(recipes_Info) {
   });
   return dic;
 }
+
+
+function previewViewDataForProfile(recipes_Info) {
+  
+  return recipes_Info.map((recipe_info) => {
+    const {
+      id,
+      image,
+      title,
+      readyInMinutes,
+      aggregateLikes,
+      vegetarian,
+      vegan,
+      glutenFree,
+    } = recipe_info.data;
+
+    var inside = {
+      recipe_id:id,
+      image: image,
+      title: title,
+      readyInMinutes: readyInMinutes,
+      aggregateLikes: aggregateLikes,
+      vegetarian: vegetarian,
+      vegan: vegan,
+      glutenFree: glutenFree,
+    }
+    
+   
+    return inside;
+  
+  });
+}
+
+// async function promiseAll(func, param_list){
+//     let promises = [];
+//     param_list.map((param) => promises.push(func(param)));
+//     let info_response = await Promise.all(promises);
+
+//     return info_response;
+// }
+exports.getRecipesPreviewInfoForProfile = getRecipesPreviewInfoForProfile;
 
 exports.getRecipesPreviewInfo = getRecipesPreviewInfo;
 exports.getRecipesInfo = getRecipesInfo;
