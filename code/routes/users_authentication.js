@@ -21,7 +21,6 @@ router.post("/Register", async (req, res, next) => {
     }
   });
   
-
 //login
   router.post("/Login", async (req, res, next) => {
     try {
