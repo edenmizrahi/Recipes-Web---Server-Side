@@ -32,6 +32,7 @@ function relevantData(recipes_Info) {
         return dic;
     });
 }
+
 async function getProfileInfoRcipes(id, username) {
     users = await DButils.execQuery("SELECT * FROM users_recipes");
 

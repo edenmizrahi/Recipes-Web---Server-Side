@@ -5,6 +5,7 @@ const recipes_api_url = "https://api.spoonacular.com/recipes";
 const api_key = "apiKey=4f9444f80338423aac1d613bc207564c";
 // const api_key = "apiKey=cac138d6087c4411b1c42232e6689678";
 // const api_key = "apiKey=9dfadfa642a74094836f8a3d38d80db2";
+
 // update params of diet, cuisine and intolerance
 function extractQueriesParams(query_params, search_params) {
   //Iterate on params list to identify only wanted params
@@ -34,7 +35,7 @@ async function searchForSpecificRecipe(search_param, param) {
     return info_recipe;
   }
   catch (err) {
-    throw { status: 404, message: "recipe not found" };
+    throw { status: 404, message: "No reciepes found for the search params." };
   }
 }
 
@@ -73,13 +74,13 @@ async function searchForRecipes(search_params, randomOrNot) {
     console.log("Info_array: ", info_array);
 
     if (info_array.length == 0) {
-      throw { status: 404, message: "recipes not found" };
+      throw { status: 404, message: "No reciepes found for the search params." };
       // next("recipes not found");
     }
     return info_array;
   }
   catch (err) {
-    throw { status: 404, message: "one of the recipes not found" };
+    throw { status: 404, message: "No reciepes found for the search params." };
   }
 }
 
@@ -255,6 +256,7 @@ function previewViewDataIncludeInstruction(recipes_Info) {
       vegan: recipe_info.data.vegan,
       glutenFree: recipe_info.data.glutenFree,
       instructions: instructions,
+      cuisine: recipe_info.data.cuisines,
     }
 
     var recipeId = recipe_info.data.id;
@@ -305,6 +307,7 @@ function previewViewDataForOneRecipe(recipe_Info) {
   var dic = {
     [recipe_Info.data.id]: inside
   }
+
   // var recipeId = recipe_info.data.id;
   // dic[recipeId] = new Object();
   // dic[recipeId] = inside;
