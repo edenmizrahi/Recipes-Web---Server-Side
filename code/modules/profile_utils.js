@@ -149,17 +149,17 @@ async function getMyRecipes(username,familyOrMy) {
             id: recipe_id,
         };
     });
-    res = await addIngrediants(recipesIds,familyOrMy);
+    res = await addDetails(recipesIds,familyOrMy);
     console.log(res);
     return res;
 
 }
 
-async function addIngrediants(recipesIds,familyOrMy) {
+async function addDetails(recipesIds) {
     console.log(recipesIds);
     promises = [];
     recipesIds.map((id_i) => {
-        promises.push(getPersonalRecipesDetails(id_i.id,familyOrMy));
+        promises.push(getPersonalRecipesPrevDetails(id_i.id));
     }
     );
     res = await Promise.all(promises);
@@ -169,10 +169,39 @@ async function addIngrediants(recipesIds,familyOrMy) {
     // return  await Promise.all (recipesIds.map( async (id_i)=> await getPersonalRecipesDetails(id_i)));
 }
 
-async function getPersonalRecipesDetails(rid,familyOrMy) {
+async function getPersonalRecipesPrevDetails(rid) {
+
+    let generalINFO = await DButils.execQuery(`SELECT * FROM personalRecipes WHERE recipe_id='${rid}'`);
+    let res=new Object();
+    
+    res.recipe_id= generalINFO[0].recipe_id;
+    res.title= generalINFO[0].title;
+    res.image= generalINFO[0].image;
+    res.duration= generalINFO[0].duration;
+    res.vegetarians= generalINFO[0].Vegetarians;
+    res.vegan= generalINFO[0].Vegan;
+    res.glutenFree= generalINFO[0].glutenFree;
+    
+    return res;
+
+
+}
+
+async function checkMatchUserRecipe(username,recipe_id,familyOrMy){
+    let generalINFO = await DButils.execQuery(`SELECT * FROM personalRecipes WHERE recipe_id='${recipe_id}' and username='${username}' and type='${familyOrMy}'`);
+    if(generalINFO.find((x) => x.username === username && x.recipe_id == recipe_id &&x.type == familyOrMy  )){
+        return true;
+    }
+    return false;
+
+
+}
+async function getPersonalRecipesFullDetails(username, rid,familyOrMy) {
     // id=id_i.id;
     // console.log(id);
-
+    if(!(await checkMatchUserRecipe(username,rid, familyOrMy))){
+        throw { status: 401, message: "You are not allowed to access this recipe" };
+    }
     let instructions = await DButils.execQuery(`SELECT * FROM instructions WHERE recipe_id='${rid}'`);
     let generalINFO = await DButils.execQuery(`SELECT * FROM personalRecipes WHERE recipe_id='${rid}'`);
     let ingredients = await DButils.execQuery(`SELECT * FROM ingredients WHERE recipe_id='${rid}'`);
@@ -231,6 +260,7 @@ async function getPersonalRecipesDetails(rid,familyOrMy) {
     if(familyOrMy=="family"){
         let familyInfo = await DButils.execQuery(`SELECT * FROM familyRecipes WHERE recipe_id='${rid}'`);
         let pictures = await DButils.execQuery(`SELECT * FROM picturesRecipes WHERE recipe_id='${rid}'`);
+        dicOfPics={};
         let picturesOfRec = pictures.map((pic) => {
             // const{
             //     pic.picture,
@@ -240,27 +270,51 @@ async function getPersonalRecipesDetails(rid,familyOrMy) {
             // return{
             //     picture,
             // };
+
+            // dicOfPics=new Object();
+            // dicOfPics.picture=pic.picture;
+            // return dicOfPics;
+
             return pic.picture;
+
             // let instructionsOfRec = {
             //     [ins.num]: ins.content
             // }
             // return instructionsOfRec;
         });
 
-        let res = {
-            "title": generalINFO[0].title,
-            "owner": familyInfo[0].owner,
-            "when": familyInfo[0].when,
-            "pictures": picturesOfRec,
-            "image": generalINFO[0].image,
-            "duration": generalINFO[0].duration,
-            "vegetarians": generalINFO[0].Vegetarians==1?true:false,
-            "vegan": generalINFO[0].Vegan==1?true:false,
-            "glutenFree": generalINFO[0].glutenFree==1?true:false,
-            "ingredients": ingredientsOfRec,
-            "instrauctions": instructionsOfRec,
-        }
-        return { [generalINFO[0].recipe_id]: res };
+        // let res = {
+        //     "title": generalINFO[0].title,
+        //     "owner": familyInfo[0].owner,
+        //     "when": familyInfo[0].when,
+        //     "pictures": picturesOfRec,
+        //     "image": generalINFO[0].image,
+        //     "duration": generalINFO[0].duration,
+        //     "vegetarians": generalINFO[0].Vegetarians==1?true:false,
+        //     "vegan": generalINFO[0].Vegan==1?true:false,
+        //     "glutenFree": generalINFO[0].glutenFree==1?true:false,
+        //     "ingredients": ingredientsOfRec,
+        //     "instrauctions": instructionsOfRec,
+        // }
+        // return { [generalINFO[0].recipe_id]: res };
+        let res=new Object();
+     
+        res.recipe_id= generalINFO[0].recipe_id;
+        res.title= generalINFO[0].title;
+        res.image= generalINFO[0].image;
+        res.duration= generalINFO[0].duration;
+        res.vegetarians= generalINFO[0].Vegetarians;
+        res.vegan= generalINFO[0].Vegan;
+        res.glutenFree= generalINFO[0].glutenFree;
+        res.ingredients= ingredientsOfRec;
+        res.instrauctions= instructionsOfRec;
+        res.owner=familyInfo[0].owner;
+        res.where=familyInfo[0].where;
+        res.pictures=picturesOfRec;
+
+
+    
+        return res;
 
     }
     else{
@@ -281,6 +335,8 @@ async function getPersonalRecipesDetails(rid,familyOrMy) {
     }
     // console.log("res is:" + res + " res id: " + generalINFO[0].recipe_id);
 }
+exports.getPersonalRecipesFullDetails = getPersonalRecipesFullDetails;
+
 exports.getMyRecipes = getMyRecipes;
 exports.getTopThree = getTopThree;
 exports.addToWatchList = addToWatchList;

@@ -25,7 +25,7 @@ router.use((req, res, next) => {
 
 /**
  * get recipe's profile info(watched/favorite):
- * return dic{"45": object{watched :"0", favorite:"0"}} 
+ * return object :{"45": object{watched :"false", favorite:"false"}} 
  */
 router.get("/recipeInfo/:ids", async(req, res, next) => {
   try {
@@ -45,7 +45,7 @@ router.get("/recipeInfo/:ids", async(req, res, next) => {
 
 /**
 * return the latest top 3 watches
-   @return 3 recipes pre-view  
+   @return array of 3 recipees priview view
 */
 router.get("/watchedList/top", async (req, res,next) => {
   try {
@@ -62,7 +62,7 @@ router.get("/watchedList/top", async (req, res,next) => {
  * add $id to watch list of the user
  *  @return success or err
  */
-router.post("/watchedList/add/:id", async (req, res) => {
+router.put("/watchedList/add/:id", async (req, res) => {
   try {
     a = [];
     a.push(Number(req.params.id))
@@ -93,8 +93,8 @@ router.put("/favorite/add/:id", async (req, res, next) => {
 });
 
 /**
- * get my favorite recipes(pre-view)
- * @return @todo -change********
+ * get my favorites recipes(pre-view)
+ * @return array of recipe priview view
  */
 router.get("/favorite", async (req, res,next) => {
   try {
@@ -108,7 +108,7 @@ router.get("/favorite", async (req, res,next) => {
 });
 
 /*
-* get recipe from  my recipe 
+* get alll recipes from  my recipe 
 */
 router.get("/myRecipes", async (req, res, next) => {
   try {
@@ -133,52 +133,53 @@ router.get("/familyRecipes", async (req, res, next) => {
   }
 });
 
+/**
+ * get full details of my recipes 
+ * @param recipes ids array for full details
+ * @returns recipes full details
+ */
 
-
-
-router.post("/", function (req, res) {
-  result = JSON.stringify(req.user_recupe_details);
-  console.log(result);
-  res.send(JSON.stringify(req.user_recupe_details));
-});
-
-router.get("/favorites", function (req, res) {
-  res.send(req.originalUrl);
-});
-
-
-router.get("/personalRecipes", function (req, res) {
-  res.send(req.originalUrl);
-});
-
-router.use("/addPersonalRecipe", (req, res, next) => {
-  const { cookie } = req.body;
-  if (cookie && valid_cookie(cookie)) {
-    req.username = cookie.username;
-    next();
-  } else throw { status: 401, message: "unauthorized" };
-});
-// //#endregion
-
-router.post("/addPersonalRecipe", async (req, res, next) => {
+router.get("/myRecipes/:ids", async (req, res, next) => {
   try {
-    await DButils.execQuery(
-      `INSERT INTO recipes VALUES (default, '${req.user_id}', '${req.body.recipe_name}')`
-    );
-    res.send({ sucess: true });
-  } catch (error) {
-    next(error);
+    idaArray= JSON.parse(req.params.ids);
+    promises=[];
+    idaArray.map((id) => {
+      promises.push(profile_utils.getPersonalRecipesFullDetails(req.user, id,"my"));
+    }
+  );
+  result = await Promise.all(promises);
+  res.send(JSON.stringify(result));
+  }
+  catch (err) {
+    next(err)
   }
 });
-//#endregion
 
 
+/**
+ * get full details of my family recipe 
+ * @param recipes ids array for full details
+ * @returns recipes full details
+ */
 
-
-router.use(function (err, req, res, next) {
-  // console.error(err);
-  res.status(err.status || 500).send({ message: err.message || "bad", success: false });
+router.get("/familyRecipes/:ids", async (req, res, next) => {
+  try {
+    idaArray= JSON.parse(req.params.ids);
+    promises=[];
+    idaArray.map((id) => {
+      promises.push(profile_utils.getPersonalRecipesFullDetails(req.user, id,"family"));
+    }
+  );
+  result = await Promise.all(promises);
+  res.send(JSON.stringify(result));
+  }
+  catch (err) {
+    next(err)
+  }
 });
+
+
+
 
 
 module.exports = router;

@@ -140,7 +140,7 @@ async function getRecipesPreviewInfo(recipes_id_list) {
     return relevantRecipesData;
   }
   catch (err) {
-    throw { status: 404, message: "recipe not found" };
+    throw { status: 404, message: "recipe not found at api" };
   }
 }
 
