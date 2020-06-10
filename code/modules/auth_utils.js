@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 
 
 
+
 function registrationMissingParam(body){
     if(!body.username){
         return "missinng username input";
