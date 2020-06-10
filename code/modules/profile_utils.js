@@ -20,7 +20,6 @@ async function getRecipeProfileInfo(username, recipes_ids_list) {
 function relevantData(recipes_Info) {
   let dic = {};
   return recipes_Info.map((recipe_Info) => {
-    console.log(recipe_Info);
     var recipeID = recipe_Info.recipe_id;
     dic[recipeID] = new Object();
     dic[recipeID].watched = recipe_Info.watched_in == 0 ? false : true;
@@ -84,10 +83,8 @@ async function getMyFavorite(username) {
       `SELECT * FROM users_recipes WHERE username='${username}' and favorite_in='1'`
     );
     recipes_Info = user_recipe_details;
-    console.log(recipes_Info);
 
     return recipes_Info.map((recipe_Info) => {
-      console.log(recipe_Info.recipe_id);
       // const{
       //     recipe_id,
 
@@ -109,7 +106,6 @@ async function addToWatchList(username, id) {
   users = await DButils.execQuery("SELECT * FROM users_recipes");
   if (users.find((x) => x.username === username && x.recipe_id == id)) {
     newId = await getNextId();
-    console.log(newId);
     user_recipe_details = await DButils.execQuery(
       `UPDATE users_recipes SET  id= '${newId}', watched_in='1' WHERE username='${username}' AND recipe_id='${id}'`
     );
@@ -136,7 +132,6 @@ async function getMyRecipes(username, familyOrMy) {
     `SELECT * FROM personalRecipes WHERE (username='${username}' and type= '${familyOrMy}')`
   );
   let recipesIds = recipes.map((res) => {
-    console.log(res);
     const { recipe_id } = res;
 
     return {
@@ -144,18 +139,15 @@ async function getMyRecipes(username, familyOrMy) {
     };
   });
   res = await addDetails(recipesIds, familyOrMy);
-  console.log(res);
   return res;
 }
 
 async function addDetails(recipesIds) {
-  console.log(recipesIds);
   promises = [];
   recipesIds.map((id_i) => {
     promises.push(getPersonalRecipesPrevDetails(id_i.id));
   });
   res = await Promise.all(promises);
-  console.log(res);
   return res;
 
   // return  await Promise.all (recipesIds.map( async (id_i)=> await getPersonalRecipesDetails(id_i)));
@@ -196,7 +188,6 @@ async function checkMatchUserRecipe(username, recipe_id, familyOrMy) {
 }
 async function getPersonalRecipesFullDetails(username, rid, familyOrMy) {
   // id=id_i.id;
-  // console.log(id);
   if (!(await checkMatchUserRecipe(username, rid, familyOrMy))) {
     throw { status: 401, message: "You are not allowed to access this recipe" };
   }
@@ -209,9 +200,6 @@ async function getPersonalRecipesFullDetails(username, rid, familyOrMy) {
   let ingredients = await DButils.execQuery(
     `SELECT * FROM ingredients WHERE recipe_id='${rid}'`
   );
-
-  console.log("id is: " + rid);
-  console.log(ingredients);
 
   // /**** */
   // let dic={};
@@ -242,7 +230,6 @@ async function getPersonalRecipesFullDetails(username, rid, familyOrMy) {
     dic.unit = ing.unit;
     return dic;
   });
-  console.log(ingredientsOfRec);
   let dicOfIns = {};
   let instructionsOfRec = instructions.map((ins) => {
     // let instructionsOfRec = {
@@ -256,9 +243,6 @@ async function getPersonalRecipesFullDetails(username, rid, familyOrMy) {
     return dicOfIns;
     // return ins.content;
   });
-  console.log(instructionsOfRec);
-  console.log(generalINFO.title);
-  console.log("id is: " + generalINFO[0].recipe_id);
 
   if (familyOrMy == "family") {
     let familyInfo = await DButils.execQuery(
