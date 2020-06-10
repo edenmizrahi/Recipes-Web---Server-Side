@@ -77,8 +77,7 @@ async function searchForRecipes(search_params, randomOrNot) {
     if (recipes_id_list.length == 0) {
       throw {
         status: 404,
-        message:
-          "No reciepes found for the search params, array's length is 0.",
+        message: "recipe not found at api",
       };
     }
 
@@ -95,7 +94,7 @@ async function searchForRecipes(search_params, randomOrNot) {
     // next(err);
     throw {
       status: err.status || 404,
-      message: err.message || "No reciepes found for the search params.",
+      message: err.message || "recipe not found at api",
     };
   }
 }
@@ -211,7 +210,7 @@ async function getRecipesInfo(recipes_id_list, search_params, randomOrNot) {
     }
     return relevantRecipesData;
   } catch (error) {
-    throw { status: 404, message: "recipe not found" };
+    throw { status: 404, message: "recipe not found at api" };
   }
 }
 
@@ -229,7 +228,7 @@ function dataOfInstructions(recipes_Info) {
 
     return array;
   } catch (err) {
-    throw { status: 404, message: "instruction extract fail" };
+    throw { status: 404, message: "recipe not found at api" };
   }
 }
 
@@ -247,7 +246,7 @@ function SplitInstructions(instructionData) {
 
     return arrayOfInstructions;
   } catch (err) {
-    throw { status: 404, message: "instruction split fail" };
+    throw { status: 404, message: "recipe not found at api" };
   }
 }
 
@@ -265,7 +264,7 @@ function SplitIngredients(ingredientsData) {
     });
     return arrayOfIngredients;
   } catch (err) {
-    throw { status: 404, message: "ingredients split fail" };
+    throw { status: 404, message: "recipe not found at api" };
   }
 }
 
@@ -299,7 +298,7 @@ function previewViewDataIncludeInstruction(recipes_Info) {
   } catch (err) {
     throw {
       status: err.status || 404,
-      message: err.message || "preview data failed",
+      message: err.message || "recipe not found at api",
     };
   }
 }
@@ -346,7 +345,7 @@ function fullViewData(recipe_Info, req) {
   } catch (err) {
     throw {
       status: err.status || 404,
-      message: err.message || "full data failed",
+      message: err.message || "recipe not found at api",
     };
   }
 }
