@@ -89,20 +89,20 @@ router.get("/displayPreviewRecipe/recipeId/:id", (req, res) => {
         }));
 });
 
-router.get("/analyzed/recipeId/:id", (req, res) => {
-    // const 
-    search_param = {};
-    search_param.recipeId = req.params;
+// router.get("/analyzed/recipeId/:id", (req, res) => {
+//     // const 
+//     search_param = {};
+//     search_param.recipeId = req.params;
 
-    //search the recipe
-    search_functions
-        .analyzedInstructions()
-        .then((search_response) => res.send(search_response))
-        .catch((error => {
-            console.log(error);
-            res.sendStatus(500);
-        }));
-});
+//     //search the recipe
+//     search_functions
+//         .analyzedInstructions()
+//         .then((search_response) => res.send(search_response))
+//         .catch((error => {
+//             console.log(error);
+//             res.sendStatus(500);
+//         }));
+// });
 
 
 

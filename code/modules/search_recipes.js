@@ -39,7 +39,7 @@ async function searchForSpecificRecipe(search_param, param) {
   }
 }
 
-async function analyzedInstructions(){
+async function analyzedInstructions() {
 
   let search_response = axios.get(`${recipes_api_url}/${id}/analyzedInstructions?${api_key}`);
   return search_response;
@@ -51,7 +51,7 @@ async function searchForRecipes(search_params, randomOrNot) {
     let search_response;
 
     if (randomOrNot == "regular") {
-      
+
       search_response = await axios.get(`${recipes_api_url}/search?${api_key}`,
         {
           params: search_params,
@@ -145,20 +145,19 @@ async function getRecipesPreviewInfo(recipes_id_list) {
   }
 }
 
-
 async function getRecipesPreviewInfoForProfile(recipes_id_list) {
-  try{
-  let promises = [];
-  // For each id  -> get promise of GET response
-  recipes_id_list.map((id) =>
-    promises.push(axios.get(`${recipes_api_url}/${id}/information?${api_key}`))
-  );
-  let info_response1 = await Promise.all(promises);
+  try {
+    let promises = [];
+    // For each id  -> get promise of GET response
+    recipes_id_list.map((id) =>
+      promises.push(axios.get(`${recipes_api_url}/${id}/information?${api_key}`))
+    );
+    let info_response1 = await Promise.all(promises);
 
-  relevantRecipesData = previewViewDataForProfile(info_response1);
-  return relevantRecipesData;
+    relevantRecipesData = previewViewDataForProfile(info_response1);
+    return relevantRecipesData;
   }
-  catch(err){
+  catch (err) {
     throw { status: 404, message: "recipe not found" };
 
   }
@@ -177,7 +176,7 @@ async function getRecipesInfo(recipes_id_list, search_params, randomOrNot) {
     let relevantRecipesInstructionData = dataOfInstructions(info_response);
     let array = [];
     relevantRecipesInstructionData.forEach((param) => {
-      if (param.instructions.length > 0) {
+      if (param.instructions != "") {
         array.push(param);
       }
     });
@@ -204,30 +203,34 @@ async function getRecipesInfo(recipes_id_list, search_params, randomOrNot) {
 
 // function that return info (id and instruction fields) about the recipes
 function dataOfInstructions(recipes_Info) {
-
-  return recipes_Info.map((recipe_info) => {
-    return {
-      id: recipe_info.data.id,
-      instructions: recipe_info.data.analyzedInstructions[0].steps,
-    };
+  let array = [];
+  // if (recipes_Info.length > 1) {
+  recipes_Info.map((recipe_info) => {
+    let cell = new Object();
+    cell.id = recipe_info.data.id;
+    cell.instructions = recipe_info.data.instructions;
+    array.push(cell);
   });
+
+  return array;
 }
 
 //split the instructions field into array
-function SplitInstructions(instructionData){
+function SplitInstructions(instructionData) {
   let record = instructionData[0].steps;
   let arrayOfInstructions = [];
   record.map((step) => {
     let cell = new Object();
     cell.number = step.number;
-    cell.step = step. step;
+    cell.step = step.step;
     arrayOfInstructions.push(cell);
   });
+
   return arrayOfInstructions;
 }
 
 //split the ingredients field into array
-function SplitIngredients(ingredientsData){
+function SplitIngredients(ingredientsData) {
   // let record = ingredientsData[0].steps;
   let arrayOfIngredients = [];
   ingredientsData.map((step) => {
@@ -245,7 +248,10 @@ function previewViewDataIncludeInstruction(recipes_Info) {
   let dic = {};
   recipes_Info.map((recipe_info) => {
 
-    const instructions = SplitInstructions(recipe_info.data.analyzedInstructions);
+    let instructions = "";
+    if (recipe_info.data.instructions != "") {
+      instructions = SplitInstructions(recipe_info.data.analyzedInstructions);
+    }
 
     var inside = {
       image: recipe_info.data.image,
@@ -256,7 +262,7 @@ function previewViewDataIncludeInstruction(recipes_Info) {
       vegan: recipe_info.data.vegan,
       glutenFree: recipe_info.data.glutenFree,
       instructions: instructions,
-      cuisine: recipe_info.data.cuisines,
+      // cuisine: recipe_info.data.cuisines,
     }
 
     var recipeId = recipe_info.data.id;
@@ -269,8 +275,15 @@ function previewViewDataIncludeInstruction(recipes_Info) {
 // function that return full info about one recipe
 function fullViewData(recipe_Info) {
 
-  const instructions = SplitInstructions(recipe_Info.data.analyzedInstructions);
-  const ingredients = SplitIngredients(recipe_Info.data.extendedIngredients);
+  let instructions = "";
+  if (recipe_Info.data.instructions != "") {
+    instructions = SplitInstructions(recipe_Info.data.analyzedInstructions);
+  }
+  let ingredients = "";
+  if(recipe_Info.data.extendedIngredients.length > 0){
+    ingredients = SplitIngredients(recipe_Info.data.extendedIngredients);
+  }
+  
   let dic = {};
   var inside = {
     image: recipe_Info.data.image,
@@ -328,7 +341,7 @@ function previewViewData(recipes_Info) {
       vegan,
       glutenFree,
     } = recipe_info.data;
- 
+
     var inside = {
       image: image,
       title: title,
@@ -348,9 +361,8 @@ function previewViewData(recipes_Info) {
   return dic;
 }
 
-
 function previewViewDataForProfile(recipes_Info) {
-  
+
   return recipes_Info.map((recipe_info) => {
     const {
       id,
@@ -364,7 +376,7 @@ function previewViewDataForProfile(recipes_Info) {
     } = recipe_info.data;
 
     var inside = {
-      recipe_id:id,
+      recipe_id: id,
       image: image,
       title: title,
       readyInMinutes: readyInMinutes,
@@ -373,20 +385,13 @@ function previewViewDataForProfile(recipes_Info) {
       vegan: vegan,
       glutenFree: glutenFree,
     }
-    
-   
+
+
     return inside;
-  
+
   });
 }
 
-// async function promiseAll(func, param_list){
-//     let promises = [];
-//     param_list.map((param) => promises.push(func(param)));
-//     let info_response = await Promise.all(promises);
-
-//     return info_response;
-// }
 exports.getRecipesPreviewInfoForProfile = getRecipesPreviewInfoForProfile;
 
 exports.getRecipesPreviewInfo = getRecipesPreviewInfo;
