@@ -123,21 +123,10 @@ async function addToWatchList(username, id) {
 
 async function getTopThree(username) {
   let result = await DButils.execQuery(`SELECT  TOP (3) *
-    FROM users_recipes WHERE username='${username}'
+    FROM users_recipes WHERE username='${username}' and watched_in='1'
     ORDER BY [id] DESC;`);
-  console.log(result);
 
   return result.map((rec) => {
-    // console.log(res);
-    // const{
-    //     recipe_id,
-
-    // }=res;
-
-    // return{
-    //     id: recipe_id,
-
-    // };
     return Number(rec.recipe_id);
   });
 }
@@ -182,9 +171,9 @@ async function getPersonalRecipesPrevDetails(rid) {
   res.title = generalINFO[0].title;
   res.image = generalINFO[0].image;
   res.duration = generalINFO[0].duration;
-  res.vegetarians = generalINFO[0].Vegetarians;
-  res.vegan = generalINFO[0].Vegan;
-  res.glutenFree = generalINFO[0].glutenFree;
+  res.vegetarians = generalINFO[0].Vegetarians == 1 ? true : false;
+  res.vegan = generalINFO[0].Vegan == 1 ? true : false;
+  res.glutenFree = generalINFO[0].glutenFree == 1 ? true : false;
 
   return res;
 }
