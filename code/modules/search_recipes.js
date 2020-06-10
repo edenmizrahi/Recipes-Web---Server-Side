@@ -39,12 +39,12 @@ async function searchForSpecificRecipe(search_param, param, req) {
   }
 }
 
-async function analyzedInstructions() {
-  let search_response = axios.get(
-    `${recipes_api_url}/${id}/analyzedInstructions?${api_key}`
-  );
-  return search_response;
-}
+// async function analyzedInstructions() {
+//   let search_response = axios.get(
+//     `${recipes_api_url}/${id}/analyzedInstructions?${api_key}`
+//   );
+//   return search_response;
+// }
 
 // async function that search recipes and return full/preview view, according to "randomOrNot"
 async function searchForRecipes(search_params, randomOrNot) {
@@ -71,8 +71,16 @@ async function searchForRecipes(search_params, randomOrNot) {
       search_response,
       randomOrNot
     );
+
     console.log(recipes_id_list);
-    // recipes_id_list[0] = 716429;
+
+    if (recipes_id_list.length == 0) {
+      throw {
+        status: 404,
+        message: "recipe not found at api",
+      };
+    }
+
     // Get recipes info by id
     let info_array = await getRecipesInfo(
       recipes_id_list,
@@ -81,16 +89,13 @@ async function searchForRecipes(search_params, randomOrNot) {
     );
     console.log("Info_array: ", info_array);
 
-    if (info_array.length == 0) {
-      throw {
-        status: 404,
-        message: "No reciepes found for the search params.",
-      };
-      // next("recipes not found");
-    }
     return info_array;
   } catch (err) {
-    throw { status: 404, message: "No reciepes found for the search params." };
+    // next(err);
+    throw {
+      status: err.status || 404,
+      message: err.message || "recipe not found at api",
+    };
   }
 }
 
@@ -110,7 +115,7 @@ function extractSearchResultsdIds(search_response, randomOrNot) {
     });
     return recipes_id_list;
   } catch (err) {
-    throw { status: 404, message: "recipe not found" };
+    throw { status: 404, message: "recipe not found at api" };
   }
 }
 
@@ -131,7 +136,7 @@ async function getRecipeInfo(recipe_id, param, req) {
 
     return relevantRecipesData;
   } catch (err) {
-    throw { status: 404, message: "recipe not found" };
+    throw { status: 404, message: "recipe not found at api" };
   }
 }
 
@@ -187,7 +192,7 @@ async function getRecipesInfo(recipes_id_list, search_params, randomOrNot) {
     let relevantRecipesInstructionData = dataOfInstructions(info_response);
     let array = [];
     relevantRecipesInstructionData.forEach((param) => {
-      if (param.instructions.length > 0) {
+      if (param.instructions != "") {
         array.push(param);
       }
     });
@@ -205,103 +210,144 @@ async function getRecipesInfo(recipes_id_list, search_params, randomOrNot) {
     }
     return relevantRecipesData;
   } catch (error) {
-    throw { status: 404, message: "recipe not found" };
+    throw { status: 404, message: "recipe not found at api" };
   }
 }
 
 // function that return info (id and instruction fields) about the recipes
 function dataOfInstructions(recipes_Info) {
-  return recipes_Info.map((recipe_info) => {
-    return {
-      id: recipe_info.data.id,
-      instructions: recipe_info.data.analyzedInstructions[0].steps,
-    };
-  });
+  try {
+    let array = [];
+    // if (recipes_Info.length > 1) {
+    recipes_Info.map((recipe_info) => {
+      let cell = new Object();
+      cell.id = recipe_info.data.id;
+      cell.instructions = recipe_info.data.instructions;
+      array.push(cell);
+    });
+
+    return array;
+  } catch (err) {
+    throw { status: 404, message: "recipe not found at api" };
+  }
 }
 
 //split the instructions field into array
 function SplitInstructions(instructionData) {
-  let record = instructionData[0].steps;
-  let arrayOfInstructions = [];
-  record.map((step) => {
-    let cell = new Object();
-    cell.number = step.number;
-    cell.step = step.step;
-    arrayOfInstructions.push(cell);
-  });
-  return arrayOfInstructions;
+  try {
+    let record = instructionData[0].steps;
+    let arrayOfInstructions = [];
+    record.map((step) => {
+      let cell = new Object();
+      cell.number = step.number;
+      cell.step = step.step;
+      arrayOfInstructions.push(cell);
+    });
+
+    return arrayOfInstructions;
+  } catch (err) {
+    throw { status: 404, message: "recipe not found at api" };
+  }
 }
 
 //split the ingredients field into array
 function SplitIngredients(ingredientsData) {
-  // let record = ingredientsData[0].steps;
-  let arrayOfIngredients = [];
-  ingredientsData.map((step) => {
-    let cell = new Object();
-    cell.name = step.name;
-    cell.amount = step.amount;
-    cell.unit = step.unit;
-    arrayOfIngredients.push(cell);
-  });
-  return arrayOfIngredients;
+  try {
+    // let record = ingredientsData[0].steps;
+    let arrayOfIngredients = [];
+    ingredientsData.map((step) => {
+      let cell = new Object();
+      cell.name = step.name;
+      cell.amount = step.amount;
+      cell.unit = step.unit;
+      arrayOfIngredients.push(cell);
+    });
+    return arrayOfIngredients;
+  } catch (err) {
+    throw { status: 404, message: "recipe not found at api" };
+  }
 }
 
 // function that return info about the recipes - preview info + instructions
 function previewViewDataIncludeInstruction(recipes_Info) {
-  let dic = {};
-  recipes_Info.map((recipe_info) => {
-    const instructions = SplitInstructions(
-      recipe_info.data.analyzedInstructions
-    );
+  try {
+    let dic = {};
+    recipes_Info.map((recipe_info) => {
+      let instructions = "";
+      if (recipe_info.data.instructions != "") {
+        instructions = SplitInstructions(recipe_info.data.analyzedInstructions);
+      }
 
-    var inside = {
-      image: recipe_info.data.image,
-      title: recipe_info.data.title,
-      readyInMinutes: recipe_info.data.readyInMinutes,
-      aggregateLikes: recipe_info.data.aggregateLikes,
-      vegetarian: recipe_info.data.vegetarian,
-      vegan: recipe_info.data.vegan,
-      glutenFree: recipe_info.data.glutenFree,
-      instructions: instructions,
-      cuisine: recipe_info.data.cuisines,
+      var inside = {
+        image: recipe_info.data.image,
+        title: recipe_info.data.title,
+        readyInMinutes: recipe_info.data.readyInMinutes,
+        aggregateLikes: recipe_info.data.aggregateLikes,
+        vegetarian: recipe_info.data.vegetarian,
+        vegan: recipe_info.data.vegan,
+        glutenFree: recipe_info.data.glutenFree,
+        instructions: instructions,
+        // cuisine: recipe_info.data.cuisines,
+      };
+
+      var recipeId = recipe_info.data.id;
+      dic[recipeId] = new Object();
+      dic[recipeId] = inside;
+    });
+    return dic;
+  } catch (err) {
+    throw {
+      status: err.status || 404,
+      message: err.message || "recipe not found at api",
     };
-
-    var recipeId = recipe_info.data.id;
-    dic[recipeId] = new Object();
-    dic[recipeId] = inside;
-  });
-  return dic;
+  }
 }
 
 // function that return full info about one recipe
 function fullViewData(recipe_Info, req) {
-  DButils.execQuery("SELECT * FROM users").then((users) => {
-    if (users.find((x) => x.user_id === req.session.user_id)) {
-      user = users.find((x) => x.user_id === req.session.user_id);
-      username = user.username;
-      profile_utils.addToWatchList(username, recipe_Info.data.id);
-    }
-  });
-  const instructions = SplitInstructions(recipe_Info.data.analyzedInstructions);
-  const ingredients = SplitIngredients(recipe_Info.data.extendedIngredients);
-  let dic = {};
-  var inside = {
-    image: recipe_Info.data.image,
-    title: recipe_Info.data.title,
-    readyInMinutes: recipe_Info.data.readyInMinutes,
-    aggregateLikes: recipe_Info.data.aggregateLikes,
-    vegetarian: recipe_Info.data.vegetarian,
-    vegan: recipe_Info.data.vegan,
-    glutenFree: recipe_Info.data.glutenFree,
-    ingredients: ingredients,
-    instructions: instructions,
-    servings: recipe_Info.data.servings,
-  };
+  try {
+    DButils.execQuery("SELECT * FROM users").then((users) => {
+      if (users.find((x) => x.user_id === req.session.user_id)) {
+        user = users.find((x) => x.user_id === req.session.user_id);
+        username = user.username;
+        profile_utils.addToWatchList(username, recipe_Info.data.id);
+      }
+    });
 
-  var recipeId = recipe_Info.data.id;
-  dic[recipeId] = new Object();
-  dic[recipeId] = inside;
-  return dic;
+    let dic = {};
+
+    let instructions = "";
+    if (recipe_Info.data.instructions != "") {
+      instructions = SplitInstructions(recipe_Info.data.analyzedInstructions);
+    }
+    let ingredients = "";
+    if (recipe_Info.data.extendedIngredients.length > 0) {
+      ingredients = SplitIngredients(recipe_Info.data.extendedIngredients);
+    }
+
+    var inside = {
+      image: recipe_Info.data.image,
+      title: recipe_Info.data.title,
+      readyInMinutes: recipe_Info.data.readyInMinutes,
+      aggregateLikes: recipe_Info.data.aggregateLikes,
+      vegetarian: recipe_Info.data.vegetarian,
+      vegan: recipe_Info.data.vegan,
+      glutenFree: recipe_Info.data.glutenFree,
+      ingredients: ingredients,
+      instructions: instructions,
+      servings: recipe_Info.data.servings,
+    };
+
+    var recipeId = recipe_Info.data.id;
+    dic[recipeId] = new Object();
+    dic[recipeId] = inside;
+    return dic;
+  } catch (err) {
+    throw {
+      status: err.status || 404,
+      message: err.message || "recipe not found at api",
+    };
+  }
 }
 
 // function that return priview info about one recipe
@@ -389,18 +435,10 @@ function previewViewDataForProfile(recipes_Info) {
   });
 }
 
-// async function promiseAll(func, param_list){
-//     let promises = [];
-//     param_list.map((param) => promises.push(func(param)));
-//     let info_response = await Promise.all(promises);
-
-//     return info_response;
-// }
 exports.getRecipesPreviewInfoForProfile = getRecipesPreviewInfoForProfile;
-
 exports.getRecipesPreviewInfo = getRecipesPreviewInfo;
 exports.getRecipesInfo = getRecipesInfo;
 exports.searchForRecipes = searchForRecipes;
 exports.extractQueriesParams = extractQueriesParams;
 exports.searchForSpecificRecipe = searchForSpecificRecipe;
-exports.analyzedInstructions = analyzedInstructions;
+// exports.analyzedInstructions = analyzedInstructions;
