@@ -1,12 +1,12 @@
 # Recipes Web - Server Side
 
-# Server-side:
 The project has 3 modules :routes , modules and sql scripts
 
 # Routers:
 The project has three routes:
-user-authentication: Manage the login, logout, register requests. 
-profile: Manage the user information requests. 
+
+user-authentication: Manage the login, logout, register requests.
+profile: Manage the user information requests.
 recipes: Manage the spoonacular API recipes requests.
 
 # Modules:
@@ -20,4 +20,4 @@ manage the sql tables scripts.
 
 link to API: https://app.swaggerhub.com/apis/edenmizrahi/tests/1.0.0 The both files of the API are in " 3.1 API " folder.
 
-Yarden Schwartz, Eden Mizrahi.
+Yarden Schwartz  , Eden Mizrahi 
