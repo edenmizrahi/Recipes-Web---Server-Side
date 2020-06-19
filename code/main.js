@@ -5,6 +5,7 @@ var path = require("path");
 var logger = require("morgan");
 const session = require("client-sessions");
 const DButils = require("./modules/DButils");
+const cors = require("cors");
 
 var app = express();
 app.use(logger("dev")); //logger
@@ -14,7 +15,7 @@ app.use(
     cookieName: "session", // the cookie key name
     secret: process.env.COOKIE_SECRET, // the encryption key
     duration: 20 * 60 * 1000, // expired after
-    activeDuration: 0 // if expiresIn < activeDuration,
+    activeDuration: 0, // if expiresIn < activeDuration,
     //the session will be extended by activeDuration milliseconds
   })
 );
@@ -27,7 +28,12 @@ const users_authentication = require("./routes/users_authentication");
 const profile = require("./routes/profile");
 const recipe = require("./routes/recipes");
 //#region cookie middleware
-
+const corsConfig = {
+  origin: true,
+  credentials: true,
+};
+app.use(cors(corsConfig));
+app.options("*", cors(corsConfig));
 //#endregion
 
 app.get("/", (req, res) => res.send("welcome"));
@@ -37,14 +43,15 @@ app.use("/recipes", recipe);
 app.use(users_authentication);
 
 //not found
-app.use((req,res)=>{
-    res.sendStatus(404);
-})
-
+app.use((req, res) => {
+  res.sendStatus(404);
+});
 
 app.use(function (err, req, res, next) {
   // console.error(err);
-  res.status(err.status || 500).send({ message: err.message||"bad", success: false });
+  res
+    .status(err.status || 500)
+    .send({ message: err.message || "bad", success: false });
 });
 
 const server = app.listen(port, () => {

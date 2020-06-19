@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon code/main.js",
+    "start": "node code/main.js",
     "debug": "node --nolazy --inspect-brk=9229 code/main.js"
   },
   "dependencies": {
@@ -13,7 +13,8 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "morgan": "^1.10.0",
-    "mssql": "^6.2.0"
+    "mssql": "^6.2.0",
+    "cors": "^2.8.5"
   },
   "devDependencies": {},
   "keywords": [],
